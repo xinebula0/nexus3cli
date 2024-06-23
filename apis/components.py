@@ -3,6 +3,16 @@ from apis import BaseApi
 from requests.auth import HTTPBasicAuth
 import os
 from tqdm import tqdm
+import logging
+
+
+logger = logging.getLogger("nexus3cli")
+logger.setLevel(logging.INFO)
+
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 class Components(BaseApi):
