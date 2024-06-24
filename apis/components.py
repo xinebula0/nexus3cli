@@ -35,6 +35,10 @@ class Components(BaseApi):
                     for file in filelist:
                         filepath = os.path.join(rootpath, file)
                         directory = os.path.relpath(rootpath, root_path)
+                        if directory == ".":
+                            directory = "/"
+                        else:
+                            directory = "/" + str(directory)
 
                         # 确保文件在操作完成后关闭
                         with open(filepath, 'rb') as filepoint:
@@ -68,5 +72,31 @@ class Components(BaseApi):
                             # 更新进度条
                             pbar.update(1)
 
-    def download(self, package_name, repository, download_dir):
-        pass
+    def download(self, download_dir, username, password, repository):
+        with Session() as session:
+            auth = HTTPBasicAuth(username, password)
+            session.auth = auth
+            params = {"repository": repository}
+
+            response = session.get(self.get_url(self.apiname), params=params)
+            response.raise_for_status()
+            components = response.json()
+            for component in components['items']:
+                for asset in component['assets']:
+                    asset_url = asset['downloadUrl']
+                    file_name = os.path.basename(asset['path'])
+                    file_path = os.path.join(download_dir, file_name)
+                    response = session.get(asset_url, stream=True)
+                    response.raise_for_status()
+
+                    total_size = int(response.headers.get('content-length', 0))
+                    with open(file_path, "wb") as file, tqdm(
+                        desc=file_name,
+                        total=total_size,
+                        unit='iB',
+                        unit_scale=True,
+                        unit_divisor=1024,
+                    ) as bar:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            file.write(chunk)
+                            bar.update(len(chunk))

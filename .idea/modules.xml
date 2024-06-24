@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Nexus3cli.iml" filepath="$PROJECT_DIR$/.idea/Nexus3cli.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/nexus3cli.iml" filepath="$PROJECT_DIR$/.idea/nexus3cli.iml" />
     </modules>
   </component>
 </project>
