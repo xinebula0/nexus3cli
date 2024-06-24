@@ -34,11 +34,6 @@ class Components(BaseApi):
                 for rootpath, _, filelist in os.walk(root_path):
                     for file in filelist:
                         filepath = os.path.join(rootpath, file)
-                        directory = os.path.relpath(rootpath, root_path)
-                        if directory == ".":
-                            directory = "/"
-                        else:
-                            directory = "/" + str(directory)
 
                         # 确保文件在操作完成后关闭
                         with open(filepath, 'rb') as filepoint:
@@ -47,17 +42,22 @@ class Components(BaseApi):
                                 files = {"pypi.asset": filepoint}
                             elif self.apiname == "yum":
                                 if file.endswith(".rpm"):
+                                    directory = os.path.relpath(rootpath, root_path)
+                                    if directory == ".":
+                                        directory = "/"
+                                    else:
+                                        directory = "/" + str(directory)
                                     files = {
                                         "yum.directory": (None, directory),
                                         "yum.asset.filename": (None, file),
                                         "yum.asset": filepoint
                                     }
                                 else:
-                                    logger.info(f"Not RPM file, Skipping {file}")
+                                    logger.warning(f"Not RPM file, Skipping {file}")
                                     pbar.update(1)
                                     continue
 
-                            response = session.post(self.get_url(self.apiname),
+                            response = session.post(self.get_url("components"),
                                                     params=params,
                                                     files=files)
 
@@ -65,9 +65,9 @@ class Components(BaseApi):
                                 message = "{code}, {reason}, {file}".format(file=filepath,
                                                                             code=response.status_code,
                                                                             reason=response.content.decode("utf-8"))
-                                logger.error(message)
+                                logger.warning(message)
                             else:
-                                logger.info(f"Successfully uploaded {file}")
+                                logger.debug(f"Successfully uploaded {file}")
 
                             # 更新进度条
                             pbar.update(1)
@@ -78,7 +78,7 @@ class Components(BaseApi):
             session.auth = auth
             params = {"repository": repository}
 
-            response = session.get(self.get_url(self.apiname), params=params)
+            response = session.get(self.get_url("components"), params=params)
             response.raise_for_status()
             components = response.json()
             for component in components['items']:
