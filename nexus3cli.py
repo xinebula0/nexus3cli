@@ -32,6 +32,9 @@ def main():
     upload_parser.add_argument('--local-path', required=False, help="Local path of the files to upload")
     upload_parser.add_argument('-d', '--directory', required=False,
                                help="Directory in repostory to upload to")
+    upload_parser.add_argument('-r', '--repository',
+                               required=True,
+                               help="Name of the repository to upload")
 
     args = parser.parse_args()
     # 根据动作调用相应的函数
@@ -42,7 +45,7 @@ def main():
         nexus.download(args.local_path, username, password, args.repository)
     elif args.action == 'upload':
         nexus = Components(config["rooturl"], config["restapi"], args.target, )
-        nexus.upload(args.local_path, username, password)
+        nexus.upload(args.local_path, username, password, args.repository)
 
 
 if __name__ == "__main__":
